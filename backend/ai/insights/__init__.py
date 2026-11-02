@@ -1,0 +1,1 @@
+"""Deterministic insight-building logic."""

@@ -1,0 +1,23 @@
+'use client'
+
+import type { EnergyRow } from '@/lib/energy-analytics'
+
+export type DemoCampusId = 'CAMP001' | 'CAMP002' | 'CAMP003'
+export type DemoCampus = { id: DemoCampusId; name: string; location: string; type: string; buildings: string[]; rows: EnergyRow[]; anomalies: { building: string; title: string; cause: string; severity: 'critical' | 'warning' }[]; recommendation: string; savings: number }
+
+const makeRows = (buildings: string[], base: number, pattern: (hour: number, index: number) => number): EnergyRow[] => buildings.flatMap((building, index) => Array.from({ length: 24 }, (_, hour) => { const energyKwh = Math.round(base * (1 + index * .035) * pattern(hour, index)); return { recordedAt: `2026-08-12T${String(hour).padStart(2, '0')}:00:00Z`, buildingName: building, energyKwh, cost: Math.round(energyKwh * 8.2), carbonKg: Math.round(energyKwh * 0.68 * 10) / 10, occupancy: Math.round(Math.max(8, Math.min(96, 22 + (hour >= 8 && hour <= 17 ? 48 : hour >= 18 && hour <= 22 ? 28 : 8) + index * 1.5))), temperature: Math.round((24 + Math.sin(hour / 3) * 4) * 10) / 10 } }))
+
+const academicPattern = (hour: number, index: number) => hour >= 8 && hour <= 17 ? 1.5 + (index === 6 ? .45 : 0) + Math.sin(hour) * .12 : hour >= 18 && hour <= 21 ? .65 : .25
+const universityPattern = (hour: number, index: number) => hour >= 8 && hour <= 16 ? 1.45 : hour >= 18 && hour <= 23 ? (index === 7 ? 1.45 : .82) : .42
+const pharmaPattern = (hour: number, index: number) => hour >= 7 && hour <= 18 ? 1.38 + (index === 2 ? .22 : 0) : hour >= 19 && hour <= 22 ? 1.12 : .58
+
+export const VIGNAN_UNIVERSITY_DATA: DemoCampus = { id: 'CAMP001', name: 'Vignan University', location: 'Vadlamudi, Guntur', type: 'University Campus', buildings: ['Academic Block', 'Engineering Block', 'Science Block', 'Library', 'Administration', 'Research Center', 'Student Center', 'Hostel Blocks', 'Auditorium', 'Sports Complex'], rows: makeRows(['Academic Block', 'Engineering Block', 'Science Block', 'Library', 'Administration', 'Research Center', 'Student Center', 'Hostel Blocks', 'Auditorium', 'Sports Complex'], 142, universityPattern), anomalies: [{ building: 'Hostel Blocks', title: 'Night-time energy spike', cause: 'High HVAC and occupancy after hours.', severity: 'critical' }, { building: 'Sports Complex', title: 'Unexpected evening load', cause: 'Extended facility operation.', severity: 'warning' }], recommendation: 'Optimize hostel HVAC scheduling between 1 AM–5 AM.', savings: 27400 }
+export const VIIT_DATA: DemoCampus = { id: 'CAMP002', name: 'VIIT', location: 'Visakhapatnam', type: 'Engineering / Technology Campus', buildings: ['CSE Block', 'AI & DS Block', 'ECE Block', 'Mechanical Block', 'Central Library', 'Administration Block', 'Computer Center', 'Auditorium'], rows: makeRows(['CSE Block', 'AI & DS Block', 'ECE Block', 'Mechanical Block', 'Central Library', 'Administration Block', 'Computer Center', 'Auditorium'], 118, academicPattern), anomalies: [{ building: 'Computer Center', title: 'Equipment load 34% above baseline', cause: 'High server and computing activity.', severity: 'critical' }, { building: 'Mechanical Block', title: 'HVAC 27% above expected', cause: 'HVAC running during low occupancy.', severity: 'warning' }], recommendation: 'Reduce Computer Center cooling during low-utilization periods.', savings: 18600 }
+export const VIGNAN_PHARMA_DATA: DemoCampus = { id: 'CAMP003', name: 'Vignan Pharma', location: 'Guntur, Andhra Pradesh', type: 'Pharma Campus', buildings: ['Formulation Block', 'Quality Control Lab', 'Utilities Plant', 'Warehouse & Cold Storage', 'Research & Pilot Plant'], rows: makeRows(['Formulation Block', 'Quality Control Lab', 'Utilities Plant', 'Warehouse & Cold Storage', 'Research & Pilot Plant'], 96, pharmaPattern), anomalies: [{ building: 'Utilities Plant', title: 'Process load spike during shift change', cause: 'Combined downtime recovery and cleanroom cycling.', severity: 'critical' }, { building: 'Warehouse & Cold Storage', title: 'Temperature control drift', cause: 'Cooling loop underperforming during peak night cycle.', severity: 'warning' }], recommendation: 'Shift process-intensive utility runs away from peak tariff hours.', savings: 22100 }
+
+export const DEMO_CAMPUSES = [VIGNAN_UNIVERSITY_DATA, VIIT_DATA, VIGNAN_PHARMA_DATA]
+export const DEMO_CAMPUS_BY_ID = Object.fromEntries(DEMO_CAMPUSES.map(campus => [campus.id, campus])) as Record<DemoCampusId, DemoCampus>
+export const demoCampusRows = (id: string) => DEMO_CAMPUS_BY_ID[id as DemoCampusId]?.rows || []
+export const demoCampus = (id: string) => DEMO_CAMPUS_BY_ID[id as DemoCampusId]
+
+export function toDemoCampusRows(rows: EnergyRow[], id: string) { return rows.length ? rows : demoCampusRows(id) }

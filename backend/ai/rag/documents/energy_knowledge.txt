@@ -1,0 +1,14 @@
+HVAC efficiency
+HVAC systems are a major campus energy load. Scheduling, setpoint resets, and occupancy-based control can reduce unnecessary cooling and heating demand.
+
+Energy conservation
+Energy conservation starts with reducing avoidable loads, aligning schedules to occupancy, and optimizing equipment runtime during off-peak hours.
+
+Building energy management
+Building energy management systems coordinate HVAC, lighting, and equipment loads to reduce peak demand and maintain comfortable conditions.
+
+Peak demand management
+Peak demand can be reduced by shifting non-critical equipment loads outside the daily peak window and trimming HVAC demand when occupancy is low.
+
+Lighting efficiency
+Occupancy sensors, daylight dimming, and LED retrofits reduce lighting loads while preserving comfort and safety.
